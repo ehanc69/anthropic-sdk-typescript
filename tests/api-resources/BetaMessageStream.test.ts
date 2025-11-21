@@ -77,7 +77,7 @@ const EXPECTED_INCOMPLETE_MESSAGE = {
   type: 'message',
   content: [
     {
-      parsed: null,
+      parsed_output: null,
       type: 'text',
       text: "I'll create a comprehensive tax guide for someone with multiple W2s and save it in a file called taxes.txt. Let me do that for you now.",
     },

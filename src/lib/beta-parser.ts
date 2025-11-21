@@ -29,7 +29,7 @@ export type ParsedBetaMessage<ParsedT> = BetaMessage & {
 };
 
 export type ParsedBetaContentBlock<ParsedT> =
-  | (BetaTextBlock & { parsed: ParsedT | null })
+  | (BetaTextBlock & { parsed_output: ParsedT | null })
   | Exclude<BetaContentBlock, BetaTextBlock>;
 
 export function maybeParseBetaMessage<Params extends BetaParseableMessageCreateParams | null>(
@@ -43,7 +43,7 @@ export function maybeParseBetaMessage<Params extends BetaParseableMessageCreateP
         if (block.type === 'text') {
           return {
             ...block,
-            parsed: null,
+            parsed_output: null,
           };
         }
         return block;
@@ -59,21 +59,18 @@ export function parseBetaMessage<Params extends BetaParseableMessageCreateParams
   message: BetaMessage,
   params: Params,
 ): ParsedBetaMessage<ExtractParsedContentFromBetaParams<Params>> {
-  let firstParsed: ReturnType<typeof parseBetaOutputFormat<Params>> | null = null;
+  let firstParsedOutput: ReturnType<typeof parseBetaOutputFormat<Params>> | null = null;
 
   const content: Array<ParsedBetaContentBlock<ExtractParsedContentFromBetaParams<Params>>> =
     message.content.map((block) => {
       if (block.type === 'text') {
-        const parsed = parseBetaOutputFormat(params, block.text);
+        const parsedOutput = parseBetaOutputFormat(params, block.text);
 
-        if (firstParsed === null) {
-          firstParsed = parsed;
+        if (firstParsedOutput === null) {
+          firstParsedOutput = parsedOutput;
         }
 
-        return {
-          ...block,
-          parsed,
-        };
+        return { ...block, parsed_output: parsedOutput };
       }
       return block;
     });
@@ -81,7 +78,7 @@ export function parseBetaMessage<Params extends BetaParseableMessageCreateParams
   return {
     ...message,
     content,
-    parsed_output: firstParsed,
+    parsed_output: firstParsedOutput,
   } as ParsedBetaMessage<ExtractParsedContentFromBetaParams<Params>>;
 }
 
