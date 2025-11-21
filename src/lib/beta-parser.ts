@@ -1,3 +1,4 @@
+import type { Logger } from '../client';
 import { AnthropicError } from '../core/error';
 import {
   BetaContentBlock,
@@ -35,16 +36,27 @@ export type ParsedBetaContentBlock<ParsedT> =
 export function maybeParseBetaMessage<Params extends BetaParseableMessageCreateParams | null>(
   message: BetaMessage,
   params: Params,
+  opts: { logger: Logger },
 ): ParsedBetaMessage<ExtractParsedContentFromBetaParams<NonNullable<Params>>> {
   if (!params || !('parse' in (params.output_format ?? {}))) {
     return {
       ...message,
       content: message.content.map((block) => {
         if (block.type === 'text') {
-          return {
-            ...block,
-            parsed_output: null,
-          };
+          const parsedBlock: ParsedBetaContentBlock<ExtractParsedContentFromBetaParams<NonNullable<Params>>> =
+            {
+              ...block,
+              parsed_output: null,
+            };
+          return Object.defineProperty(parsedBlock, 'parsed', {
+            get() {
+              opts.logger.warn(
+                'The `parsed` property on `text` blocks is deprecated, please use `parsed_output` instead.',
+              );
+              return null;
+            },
+            enumerable: false,
+          });
         }
         return block;
       }),
@@ -52,12 +64,13 @@ export function maybeParseBetaMessage<Params extends BetaParseableMessageCreateP
     } as ParsedBetaMessage<ExtractParsedContentFromBetaParams<NonNullable<Params>>>;
   }
 
-  return parseBetaMessage(message, params);
+  return parseBetaMessage(message, params, opts);
 }
 
 export function parseBetaMessage<Params extends BetaParseableMessageCreateParams>(
   message: BetaMessage,
   params: Params,
+  opts: { logger: Logger },
 ): ParsedBetaMessage<ExtractParsedContentFromBetaParams<Params>> {
   let firstParsedOutput: ReturnType<typeof parseBetaOutputFormat<Params>> | null = null;
 
@@ -70,7 +83,19 @@ export function parseBetaMessage<Params extends BetaParseableMessageCreateParams
           firstParsedOutput = parsedOutput;
         }
 
-        return { ...block, parsed_output: parsedOutput };
+        const parsedBlock: ParsedBetaContentBlock<ExtractParsedContentFromBetaParams<Params>> = {
+          ...block,
+          parsed_output: parsedOutput,
+        };
+        return Object.defineProperty(parsedBlock, 'parsed', {
+          get() {
+            opts.logger.warn(
+              'The `parsed` property on `text` blocks is deprecated, please use `parsed_output` instead.',
+            );
+            return parsedOutput;
+          },
+          enumerable: false,
+        });
       }
       return block;
     });
