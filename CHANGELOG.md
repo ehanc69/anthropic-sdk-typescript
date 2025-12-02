@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.71.1 (2025-12-02)
+
+Full Changelog: [sdk-v0.71.0...sdk-v0.71.1](https://github.com/anthropics/anthropic-sdk-typescript/compare/sdk-v0.71.0...sdk-v0.71.1)
+
+### Chores
+
+* **client:** fix logger property type ([e3e4d7c](https://github.com/anthropics/anthropic-sdk-typescript/commit/e3e4d7c40c986668ed46a3f4040d60bfd2c7e76b))
+
 ## 0.71.0 (2025-11-24)
 
 Full Changelog: [sdk-v0.70.1...sdk-v0.71.0](https://github.com/anthropics/anthropic-sdk-typescript/compare/sdk-v0.70.1...sdk-v0.71.0)
